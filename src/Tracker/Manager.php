@@ -9,6 +9,7 @@ use Statamic\StaticCaching\Cacher;
 class Manager
 {
     private string $cacheKey = 'tracker::urls';
+
     private array $pipelines = [];
 
     public function add(string $url, array $tags = [])
@@ -77,5 +78,4 @@ class Manager
         $cacher = app(Cacher::class);
         $cacher->invalidateUrls($urls);
     }
-
 }

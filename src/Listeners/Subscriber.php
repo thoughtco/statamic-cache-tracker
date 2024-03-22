@@ -14,6 +14,9 @@ class Subscriber
         Events\EntryDeleted::class => 'invalidateEntry',
         Events\EntrySaved::class => 'invalidateEntry',
 
+        Events\FormDeleted::class => 'invalidateForm',
+        Events\FormSaved::class => 'invalidateForm',
+
         Events\GlobalSetDeleted::class => 'invalidateGlobal',
         Events\GlobalVariablesSaved::class => 'invalidateGlobal',
 
@@ -48,6 +51,15 @@ class Subscriber
 
         $tags = [
             $collectionHandle.':'.$entry->id(),
+        ];
+
+        $this->invalidateContent($tags);
+    }
+
+    public function invalidateForm($event)
+    {
+        $tags = [
+            'form:'.$event->form->handle(),
         ];
 
         $this->invalidateContent($tags);

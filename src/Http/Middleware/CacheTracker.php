@@ -10,6 +10,7 @@ use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
 use Statamic\Facades\URL;
+use Statamic\Forms;
 use Statamic\Support\Str;
 use Statamic\Tags;
 use Statamic\Taxonomies\LocalizedTerm;
@@ -39,7 +40,7 @@ class CacheTracker
         $url = $this->url();
 
         $this
-            ->setupNavHooks()
+            ->setupTagHooks()
             ->setupAugmentationHooks($url)
             ->setupAdditionalTracking();
 
@@ -115,13 +116,31 @@ class CacheTracker
         return $this;
     }
 
-    private function setupNavHooks()
+    private function setupTagHooks()
     {
         $self = $this;
+
+        Forms\Tags::hook('init', function ($value, $next) use ($self) {
+            if (in_array($this->method, ['errors', 'success', 'submission'])) {
+                return $next($value);
+            }
+
+            $handle = $this->params->get('in') ? 'form:'.$this->params->get('in') : $this->tag;
+            $self->addContentTag($handle);
+
+            return $next($value);
+        });
 
         Tags\Nav::hook('init', function ($value, $next) use ($self) {
             $handle = $this->params->get('handle') ? 'nav:'.$this->params->get('handle') : $this->tag;
             $self->addContentTag($handle);
+
+            return $next($value);
+        });
+
+        Tags\Partial::hook('init', function ($value, $next) use ($self) {
+            $handle = $this->params->get('src') ?? str_replace('partial:', '', $this->tag);
+            $self->addContentTag('partial:'.$handle);
 
             return $next($value);
         });
