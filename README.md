@@ -19,7 +19,7 @@ php artisan vendor:publish --tag=statamic-cache-tracker-config
 
 ## How it works
 
-The addon should work auto-magically in most cases. It listens for hooks in nav and collection tags, as well as augmentation of entries, terms, assets and globals to determine what content is being output. 
+The addon should work auto-magically in most cases. It listens for hooks in nav tags, as well as augmentation of entries, terms, assets and globals to determine what content is being output. 
 
 This data is then added to a cache store that is used to determine what cached data should be invalidated at what times.
 
