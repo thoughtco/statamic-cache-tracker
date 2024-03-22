@@ -30,6 +30,6 @@ The autocache middleware will automatically be added to your `web` middleware st
 
 `\Thoughtco\StatamicCacheTracker\Http\Middleware\CacheTracker::class`
 
-### Store
+### Tracker Facade
 The addon comes with a Facade for interacting with the Tracker:
 `\Thoughtco\StatamicCacheTracker\Facades\Tracker`

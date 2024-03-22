@@ -3,11 +3,12 @@
 namespace Thoughtco\StatamicCacheTracker\Http\Middleware;
 
 use Closure;
+use Livewire\Livewire;
 use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
-use Livewire\Livewire;
 use Statamic\Facades\URL;
+use Statamic\Support\Str;
 use Statamic\Tags;
 use Statamic\Taxonomies\LocalizedTerm;
 use Thoughtco\StatamicCacheTracker\Facades\Tracker;
@@ -55,7 +56,7 @@ class CacheTracker
         }
 
         // Only GET requests. This disables the cache during live preview.
-        return $request->method() === 'GET' && substr($request->path(), 0, 2) != '!/';
+        return $request->method() === 'GET' && ! Str::startsWith($request->path(), config('statamic.routes.action', '!').'/';
     }
 
     private function setupAugmentationHooks(string $url)
