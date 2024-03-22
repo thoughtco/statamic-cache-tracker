@@ -49,7 +49,7 @@ Tracker::addAdditionalTracker(function ($tracker, $next) {
 ```
 
 ### Invalidating your tracked data
-To invalidate your tracked data, use a listener or observer, and call:         
+To invalidate pages containing your tracked data, use a listener or observer, and call:         
 
 ```
 Tracker::invalidate($tags);
