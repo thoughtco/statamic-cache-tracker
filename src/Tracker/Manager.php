@@ -16,7 +16,7 @@ class Manager
         $storeData = $this->cacheStore()->get($this->cacheKey) ?? [];
         $storeData[md5($url)] = [
             'url' => $url,
-            'tags' => $tags
+            'tags' => collect($tags)->unique()->all(),
         ];
 
         $this->cacheStore()->forever($this->cacheKey, $storeData);
