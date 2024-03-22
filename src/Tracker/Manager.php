@@ -78,4 +78,9 @@ class Manager
         $cacher = app(Cacher::class);
         $cacher->invalidateUrls($urls);
     }
+
+    public function remove(string $url)
+    {
+        $this->cacheStore()->forget(md5($url));
+    }
 }

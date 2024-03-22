@@ -11,7 +11,7 @@ class Subscriber
         Events\AssetDeleted::class => 'invalidateAsset',
         Events\AssetSaved::class => 'invalidateAsset',
 
-        Events\EntryDeleted::class => 'invalidateEntry',
+        Events\EntryDeleted::class => 'invalidateAndDeleteEntry',
         Events\EntrySaved::class => 'invalidateEntry',
 
         Events\FormDeleted::class => 'invalidateForm',
@@ -23,6 +23,9 @@ class Subscriber
         Events\NavDeleted::class => 'invalidateNav',
         Events\NavTreeSaved::class => 'invalidateNav',
         Events\CollectionTreeSaved::class => 'invalidateNav',
+
+        Events\TermDeleted::class => 'invalidateAndDeleteTerm',
+        Events\TermSaved::class => 'invalidateTerm',
     ];
 
     public function subscribe($dispatcher): void
@@ -54,6 +57,15 @@ class Subscriber
         ];
 
         $this->invalidateContent($tags);
+    }
+
+    public function invalidateAndDeleteEntry($event)
+    {
+        $this->invalidateEntry($event);
+
+        if ($url = $event->entry->absoluteUrl()) {
+            Tracker::remove($url);
+        }
     }
 
     public function invalidateForm($event)
@@ -90,6 +102,15 @@ class Subscriber
         ];
 
         $this->invalidateContent($tags);
+    }
+
+    public function invalidateAndDeleteTerm($event)
+    {
+        $this->invalidateTerm($event);
+
+        if ($url = $event->term->absoluteUrl()) {
+            Tracker::remove($url);
+        }
     }
 
     private function invalidateContent($tags)
