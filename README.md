@@ -33,3 +33,25 @@ The autocache middleware will automatically be added to your `web` middleware st
 ### Tracker Facade
 The addon comes with a Facade for interacting with the Tracker:
 `\Thoughtco\StatamicCacheTracker\Facades\Tracker`
+
+
+### Adding tracking data
+If you have your own custom tracking data, for example for one of your own tags, you can register then on the Facade. Please bear in mind tracking only happens while the response is generated, so where possible use augmentation hooks.
+
+```php
+Tracker::addAdditionalTracker(function ($tracker, $next) {
+    // run your logic, for example in an augmentation hook
+    // then call:
+    $tracker->addContentTag('your-tag-here');
+
+    return $next($tracker);
+});
+```
+
+### Invalidating your tracked data
+To invalidate your tracked data, use a listener or observer, and call:         
+
+```
+Tracker::invalidate($tags);
+```
+

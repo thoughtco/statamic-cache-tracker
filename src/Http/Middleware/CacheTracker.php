@@ -3,6 +3,8 @@
 namespace Thoughtco\StatamicCacheTracker\Http\Middleware;
 
 use Closure;
+use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Arr;
 use Livewire\Livewire;
 use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
@@ -19,7 +21,11 @@ class CacheTracker
 
     public function addContentTag($tag)
     {
-        $this->content[] = $tag;
+        $tags = Arr::wrap($tag);
+
+        foreach ($tags as $tag) {
+            $this->content[] = $tag;
+        }
 
         return $this;
     }
@@ -34,7 +40,8 @@ class CacheTracker
 
         $this
             ->setupNavHooks()
-            ->setupAugmentationHooks($url);
+            ->setupAugmentationHooks($url)
+            ->setupAdditionalTracking();
 
         $response = $next($request);
 
@@ -56,7 +63,23 @@ class CacheTracker
         }
 
         // Only GET requests. This disables the cache during live preview.
-        return $request->method() === 'GET' && ! Str::startsWith($request->path(), config('statamic.routes.action', '!').'/';
+        return $request->method() === 'GET' && ! Str::startsWith($request->path(), config('statamic.routes.action', '!').'/');
+    }
+
+    private function setupAdditionalTracking()
+    {
+        $pipelines = Tracker::getAdditionalTrackers();
+
+        if (empty($pipelines)) {
+            return $this;
+        }
+
+        (new Pipeline)
+            ->send($this)
+            ->through($pipelines)
+            ->thenReturn();
+
+        return $this;
     }
 
     private function setupAugmentationHooks(string $url)
@@ -88,6 +111,8 @@ class CacheTracker
 
             return $next($augmented);
         });
+
+        return $this;
     }
 
     private function setupNavHooks()

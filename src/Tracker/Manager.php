@@ -8,7 +8,8 @@ use Statamic\StaticCaching\Cacher;
 
 class Manager
 {
-    private $cacheKey = 'tracker::urls';
+    private string $cacheKey = 'tracker::urls';
+    private array $pipelines = [];
 
     public function add(string $url, array $tags = [])
     {
@@ -21,6 +22,29 @@ class Manager
         $this->cacheStore()->forever($this->cacheKey, $storeData);
 
         return $this;
+    }
+
+    public function addAdditionalTracker(string $class)
+    {
+        $this->pipelines[] = $class;
+
+        return $this;
+    }
+
+    public function cacheStore()
+    {
+        try {
+            $store = Cache::store('static_cache');
+        } catch (InvalidArgumentException $e) {
+            $store = Cache::store();
+        }
+
+        return $store;
+    }
+
+    public function getAdditionalTrackers()
+    {
+        return $this->pipelines;
     }
 
     public function invalidate(array $tags = [])
@@ -48,20 +72,10 @@ class Manager
         return $this;
     }
 
-    public function cacheStore()
-    {
-        try {
-            $store = Cache::store('static_cache');
-        } catch (InvalidArgumentException $e) {
-            $store = Cache::store();
-        }
-
-        return $store;
-    }
-
     private function invalidateUrls($urls)
     {
         $cacher = app(Cacher::class);
         $cacher->invalidateUrls($urls);
     }
+
 }
