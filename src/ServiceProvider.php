@@ -16,8 +16,10 @@ class ServiceProvider extends AddonServiceProvider
         Listeners\Subscriber::class,
     ];
 
-    public function bootAddon()
+    public function boot()
     {
+        parent::boot();
+
         $this->mergeConfigFrom($config = __DIR__.'/../config/statamic-cache-tracker.php', 'statamic-cache-tracker');
 
         $this->publishes([
