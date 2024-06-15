@@ -60,7 +60,7 @@ class Manager
             if (count(array_intersect($tags, $storeTags)) > 0) {
                 $urls[] = $url;
 
-                unset($storeData[$url]);
+                unset($storeData[$key]);
             }
         }
 
