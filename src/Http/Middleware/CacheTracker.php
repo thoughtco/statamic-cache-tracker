@@ -127,8 +127,14 @@ class CacheTracker
                 return $next($value);
             }
 
-            $handle = $this->params->get('in') ? 'form:'.$this->params->get('in') : $this->tag;
-            $self->addContentTag($handle);
+            if ($form = $this->params->get('in')) {
+                $form = is_string($form) ? $form : $form->handle();
+                $self->addContentTag('form:'.$form);
+
+                return $next($value);
+            }
+
+            $self->addContentTag($this->tag);
 
             return $next($value);
         });
