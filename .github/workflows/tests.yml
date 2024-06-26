@@ -1,0 +1,38 @@
+name: Test Suite
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  php_tests:
+    if: "!contains(github.event.head_commit.message, 'changelog')"
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        php: [8.3, 8.2]
+        laravel: [10.*, 11.*]
+        statamic: [^5.0]
+        os: [ubuntu-latest]
+
+    name: ${{ matrix.php }} - ${{ matrix.statamic }} - ${{ matrix.laravel }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
+
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "statamic/cms:${{ matrix.statamic }}" --no-interaction --no-update
+          composer install --no-interaction
+
+      - name: Run Pest
+        run: vendor/bin/pest
