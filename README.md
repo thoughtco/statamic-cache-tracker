@@ -38,7 +38,9 @@ The addon comes with a Facade for interacting with the Tracker:
 
 
 ### Adding your own tracking data
-If you have your own custom tracking data, for example for one of your own tags, you can register then on the Facade. Please bear in mind tracking only happens while the response is generated, so where possible use augmentation hooks.
+If you have your own custom tracking data, for example for one of your own tags, you can register them on the Facade. Please bear in mind tracking only happens while the response is generated, so where possible use augmentation hooks.
+
+#### Using a closure
 
 ```php
 Tracker::addAdditionalTracker(function ($tracker, $next) {
@@ -48,6 +50,18 @@ Tracker::addAdditionalTracker(function ($tracker, $next) {
 
     return $next($tracker);
 });
+```
+
+#### Using an invokable class
+
+```php
+class AdditionalTrackerClass {
+    public function __invoke($tracker, $next) {
+        $tracker->addContentTag('additional::tag');
+    }
+}
+
+Tracker::addAdditionalTracker(AdditionalTrackerClass::class);
 ```
 
 ### Invalidating tracked data
