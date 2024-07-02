@@ -75,9 +75,9 @@ class Manager
         }
 
         if (! empty($urls)) {
-            $this->invalidateUrls($urls);
-
             $this->cacheStore()->forever($this->cacheKey, $storeData);
+
+            $this->invalidateUrls($urls);
         }
 
         return $this;
