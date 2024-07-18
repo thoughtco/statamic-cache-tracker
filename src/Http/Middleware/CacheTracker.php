@@ -48,7 +48,7 @@ class CacheTracker
         $response = $next($request);
 
         if ($this->content) {
-            Tracker::add($url, $this->content);
+            Tracker::add($url, array_unique($this->content));
         }
 
         return $response;
