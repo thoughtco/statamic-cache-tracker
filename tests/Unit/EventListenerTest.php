@@ -18,6 +18,7 @@ class EventListenerTest extends TestCase
 
         $next = function () {
             TrackContentTags::dispatch(['test::tag']);
+
             return response('');
         };
 
