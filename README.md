@@ -64,6 +64,12 @@ class AdditionalTrackerClass {
 Tracker::addAdditionalTracker(AdditionalTrackerClass::class);
 ```
 
+#### Dispatching an event
+
+```php
+Thoughtco\StatamicCacheTracker\Events\TrackContentTags::dispatch(['additional::tag']);
+```
+
 ### Invalidating tracked data
 To invalidate pages containing your tracked data, use a listener or observer, and call:         
 
