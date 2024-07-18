@@ -5,6 +5,7 @@ namespace Thoughtco\StatamicCacheTracker\Http\Middleware;
 use Closure;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
@@ -15,6 +16,7 @@ use Statamic\Structures\Page;
 use Statamic\Support\Str;
 use Statamic\Tags;
 use Statamic\Taxonomies\LocalizedTerm;
+use Thoughtco\StatamicCacheTracker\Events\TrackContentTags;
 use Thoughtco\StatamicCacheTracker\Facades\Tracker;
 
 class CacheTracker
@@ -44,6 +46,10 @@ class CacheTracker
             ->setupTagHooks()
             ->setupAugmentationHooks($url)
             ->setupAdditionalTracking();
+
+        Event::listen(function (TrackContentTags $event) {
+            $this->content = array_merge($this->content, $event->tags ?? []);
+        });
 
         $response = $next($request);
 
