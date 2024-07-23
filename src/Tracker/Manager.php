@@ -3,6 +3,7 @@
 namespace Thoughtco\StatamicCacheTracker\Tracker;
 
 use Closure;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use Statamic\StaticCaching\Cacher;
@@ -24,11 +25,6 @@ class Manager
         $this->cacheStore()->forever($this->cacheKey, $storeData);
 
         return $this;
-    }
-
-    public function get(string $url)
-    {
-        return $this->all()[md5($url)] ?? null;
     }
 
     public function addAdditionalTracker(Closure|string $class)
@@ -58,9 +54,19 @@ class Manager
         return $store;
     }
 
+    public function get(string $url)
+    {
+        return $this->all()[md5($url)] ?? null;
+    }
+
     public function getAdditionalTrackers()
     {
         return $this->pipelines;
+    }
+
+    public function has(string $url)
+    {
+        return Arr::exists($this->all(), md5($url));
     }
 
     public function invalidate(array $tags = [])
