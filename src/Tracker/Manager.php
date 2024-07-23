@@ -54,11 +54,6 @@ class Manager
         return $store;
     }
 
-    public function get(string $url)
-    {
-        return $this->all()[md5($url)] ?? null;
-    }
-
     public function getAdditionalTrackers()
     {
         return $this->pipelines;
