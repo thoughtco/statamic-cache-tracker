@@ -26,6 +26,11 @@ class Manager
         return $this;
     }
 
+    public function get(string $url)
+    {
+        return $this->all()[md5($url)] ?? null;
+    }
+
     public function addAdditionalTracker(Closure|string $class)
     {
         if (is_string($class)) {
