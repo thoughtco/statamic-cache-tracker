@@ -4,6 +4,7 @@ namespace Thoughtco\StatamicCacheTracker\Listeners;
 
 use Statamic\Events;
 use Thoughtco\StatamicCacheTracker\Facades\Tracker;
+use Thoughtco\StatamicCacheTracker\Jobs\InvalidateTags;
 
 class Subscriber
 {
@@ -115,6 +116,6 @@ class Subscriber
 
     private function invalidateContent($tags)
     {
-        Tracker::invalidate($tags);
+        InvalidateTags::dispatch($tags);
     }
 }
