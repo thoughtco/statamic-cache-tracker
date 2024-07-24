@@ -42,6 +42,10 @@ class CacheTracker
 
         $url = $this->url();
 
+        if (Tracker::has($url)) {
+            return $next($request);
+        }
+
         $this
             ->setupTagHooks()
             ->setupAugmentationHooks($url)
