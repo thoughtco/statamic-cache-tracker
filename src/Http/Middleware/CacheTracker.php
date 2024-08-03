@@ -12,6 +12,7 @@ use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
 use Statamic\Facades\URL;
 use Statamic\Forms;
+use Statamic\StaticCaching\Cacher;
 use Statamic\Structures\Page;
 use Statamic\Support\Str;
 use Statamic\Tags;
@@ -22,6 +23,11 @@ use Thoughtco\StatamicCacheTracker\Facades\Tracker;
 class CacheTracker
 {
     private array $content = [];
+
+    public function __construct(Cacher $cacher)
+    {
+        $this->cacher = $cacher;
+    }
 
     public function addContentTag($tag)
     {
@@ -57,7 +63,7 @@ class CacheTracker
 
         $response = $next($request);
 
-        if ($this->content) {
+        if ($this->cacher->hasCachedPage($request) && $this->content) {
             Tracker::add($url, array_unique($this->content));
         }
 
