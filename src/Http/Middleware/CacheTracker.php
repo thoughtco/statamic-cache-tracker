@@ -24,11 +24,6 @@ class CacheTracker
 {
     private array $content = [];
 
-    public function __construct(Cacher $cacher)
-    {
-        $this->cacher = $cacher;
-    }
-
     public function addContentTag($tag)
     {
         $tags = Arr::wrap($tag);
@@ -44,6 +39,12 @@ class CacheTracker
     {
         if (! $this->isEnabled($request)) {
             return $next($request);
+        }
+
+        $cacher = false;
+
+        if (app()->environment() != 'testing') {
+            $cacher = app(Cacher::class);
         }
 
         $url = $this->url();
@@ -63,7 +64,11 @@ class CacheTracker
 
         $response = $next($request);
 
-        if ($this->cacher->hasCachedPage($request) && $this->content) {
+        if ($cacher && ! $cacher->hasCachedPage($request)) {
+            return $response;
+        }
+
+        if ($this->content) {
             Tracker::add($url, array_unique($this->content));
         }
 
