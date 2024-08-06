@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use Statamic\StaticCaching\Cacher;
+use Thoughtco\StatamicCacheTracker\Events\ContentTracked;
 
 class Manager
 {
@@ -23,6 +24,8 @@ class Manager
         ];
 
         $this->cacheStore()->forever($this->cacheKey, $storeData);
+
+        ContentTracked::dispatch($url, $tags);
 
         return $this;
     }

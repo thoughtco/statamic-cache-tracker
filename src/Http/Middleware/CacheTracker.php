@@ -41,10 +41,10 @@ class CacheTracker
             return $next($request);
         }
 
-        $cacher = false;
+        $cacher = app(Cacher::class);
 
-        if (app()->environment() != 'testing') {
-            $cacher = app(Cacher::class);
+        if ($cacher && $cacher->hasCachedPage($request)) {
+            return $next($request);
         }
 
         $url = $this->url();
@@ -63,10 +63,6 @@ class CacheTracker
         });
 
         $response = $next($request);
-
-        if ($cacher && ! $cacher->hasCachedPage($request)) {
-            return $response;
-        }
 
         if ($this->content) {
             Tracker::add($url, array_unique($this->content));
