@@ -105,6 +105,8 @@ class Manager
 
     public function remove(string $url)
     {
+        $this->invalidateUrls([$url]);
+
         $this->cacheStore()->forget(md5($url));
     }
 }

@@ -64,6 +64,14 @@ class CacheTracker
 
         $response = $next($request);
 
+        if (method_exists($response, 'status') && $response->status() !== 200) {
+            return $response;
+        }
+
+        if ($response->wasStaticallyCached()) {
+            return $response;
+        }
+
         if ($this->content) {
             Tracker::add($url, array_unique($this->content));
         }
@@ -82,7 +90,7 @@ class CacheTracker
         }
 
         // Only GET requests. This disables the cache during live preview.
-        return $request->method() === 'GET' && ! Str::startsWith($request->path(), config('statamic.routes.action', '!').'/');
+        return $request->method() === 'GET' && ! Str::startsWith($request->path(), [config('statamic.routes.action', '!').'/', config('statamic.assets.image_manipulation.route')]);
     }
 
     private function setupAdditionalTracking()

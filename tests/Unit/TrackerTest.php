@@ -21,7 +21,7 @@ class TrackerTest extends TestCase
 
         $this->get('/');
 
-        $this->assertSame(['test::tag'], collect(Tracker::all())->first()['tags']);
+        $this->assertSame(['test::tag', 'pages:home'], collect(Tracker::all())->first()['tags']);
 
         Event::assertDispatched(ContentTracked::class, 1);
     }
@@ -37,11 +37,11 @@ class TrackerTest extends TestCase
 
         $this->get('/');
 
-        $this->assertSame(['test::tag'], collect(Tracker::all())->first()['tags']);
+        $this->assertSame(['test::tag', 'pages:home'], collect(Tracker::all())->first()['tags']);
 
         $this->get('/');
 
-        $this->assertSame(['test::tag'], collect(Tracker::all())->first()['tags']);
+        $this->assertSame(['test::tag', 'pages:home'], collect(Tracker::all())->first()['tags']);
 
         Event::assertDispatched(ContentTracked::class, 1);
     }
@@ -60,5 +60,13 @@ class TrackerTest extends TestCase
         $this->get('/');
 
         $this->assertSame(['some:thing'], collect(Tracker::all())->first()['tags']);
+    }
+
+    #[Test]
+    public function it_doesnt_track_404_pages()
+    {
+        $this->get('/i-dont-exist');
+
+        $this->assertCount(0, Tracker::all());
     }
 }
