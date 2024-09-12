@@ -68,8 +68,12 @@ class CacheTracker
             return $response;
         }
 
-        if (is_callable([$response, 'wasStaticallyCached']) && $response->wasStaticallyCached()) {
-            return $response;
+        try {
+            if ($response->wasStaticallyCached()) {
+                return $response;
+            }
+        } catch (\Throwable $e) {
+
         }
 
         if ($this->content) {
