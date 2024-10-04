@@ -23,7 +23,7 @@ class ServiceProvider extends AddonServiceProvider
         $this->mergeConfigFrom($config = __DIR__.'/../config/statamic-cache-tracker.php', 'statamic-cache-tracker');
 
         $this->publishes([
-            $config => config_path('statamic-cache.php'),
+            $config => config_path('statamic-cache-tracker.php'),
         ], 'statamic-cache-tracker-config');
     }
 }
