@@ -78,4 +78,10 @@ $tags = ['one', 'two', 'three'];
 Tracker::invalidate($tags);
 ```
 
+### Flushing tracked data
+To invalidate all pages containing your tracked data call:
+
+```php
+Tracker::flush();
+```
 
