@@ -4,6 +4,7 @@ namespace Thoughtco\StatamicCacheTracker\Tests\Unit;
 
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\Test;
+use Statamic\Events\UrlInvalidated;
 use Thoughtco\StatamicCacheTracker\Events\ContentTracked;
 use Thoughtco\StatamicCacheTracker\Facades\Tracker;
 use Thoughtco\StatamicCacheTracker\Tests\TestCase;
@@ -68,5 +69,26 @@ class TrackerTest extends TestCase
         $this->get('/i-dont-exist');
 
         $this->assertCount(0, Tracker::all());
+    }
+
+    #[Test]
+    public function it_flushes()
+    {
+        Event::fake();
+
+        Tracker::addAdditionalTracker(function ($tracker, $next) {
+            $tracker->addContentTag('test::tag');
+        });
+
+        $this->get('/');
+
+        $this->assertSame(['test::tag', 'pages:home'], collect(Tracker::all())->first()['tags']);
+
+        $this->assertCount(1, Tracker::all());
+
+        Tracker::flush();
+
+        $this->assertCount(0, Tracker::all());
+        Event::assertDispatched(UrlInvalidated::class);
     }
 }

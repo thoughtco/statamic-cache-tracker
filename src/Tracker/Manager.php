@@ -103,6 +103,15 @@ class Manager
         $cacher->invalidateUrls($urls);
     }
 
+    public function flush()
+    {
+        $urls = collect($this->all())->pluck('url');
+
+        $this->invalidateUrls($urls);
+
+        $this->cacheStore()->forever($this->cacheKey, []);
+    }
+
     public function remove(string $url)
     {
         $this->invalidateUrls([$url]);
