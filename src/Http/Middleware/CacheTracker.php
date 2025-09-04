@@ -124,17 +124,13 @@ class CacheTracker
         });
 
         app(Entry::class)::hook('augmented', function ($augmented, $next) use ($self, $url) {
-            if ($this->absoluteUrl() != $url) {
-                $self->addContentTag($this->collection()->handle().':'.$this->id());
-            }
+            $self->addContentTag($this->collection()->handle().':'.$this->id());
 
             return $next($augmented);
         });
 
         Page::hook('augmented', function ($augmented, $next) use ($self, $url) {
-            $entry = $this->entry();
-
-            if ($entry && $entry->absoluteUrl() != $url) {
+            if ($entry = $this->entry()) {
                 $self->addContentTag($entry->collection()->handle().':'.$entry->id());
             }
 
@@ -142,9 +138,7 @@ class CacheTracker
         });
 
         LocalizedTerm::hook('augmented', function ($augmented, $next) use ($self, $url) {
-            if ($this->absoluteUrl() != $url) {
-                $self->addContentTag('term:'.$this->id());
-            }
+            $self->addContentTag('term:'.$this->id());
 
             return $next($augmented);
         });
