@@ -11,9 +11,9 @@
         }
     },
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "pixelfear/composer-dist-plugin": "^0.1.5",
-        "statamic/cms": "^4.55 || ^5.0"
+        "statamic/cms": "^5.0 || ^6.0"
     },
     "require-dev": {
         "laravel/pint": "^1.13",
