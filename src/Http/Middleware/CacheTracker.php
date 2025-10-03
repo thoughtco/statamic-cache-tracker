@@ -49,6 +49,10 @@ class CacheTracker
 
         $url = $this->url();
 
+        if (Str::endsWith($url, '/')) {
+            $url = substr($url, 0, -1);
+        }
+
         if (Tracker::has($url)) {
             return $next($request);
         }

@@ -7,7 +7,7 @@ use Statamic\Providers\AddonServiceProvider;
 class ServiceProvider extends AddonServiceProvider
 {
     protected $actions = [
-        Actions\ClearCache::class,
+        Actions\ViewCacheTags::class,
     ];
 
     protected $middlewareGroups = [
@@ -18,6 +18,16 @@ class ServiceProvider extends AddonServiceProvider
 
     protected $subscribe = [
         Listeners\Subscriber::class,
+    ];
+
+    protected $routes = [
+        'cp' => __DIR__.'/../routes/cp.php',
+    ];
+
+    protected $vite = [
+        'input' => ['resources/js/cp.js'],
+        'publicDirectory' => 'dist',
+        'hotFile' => __DIR__.'/../dist/hot',
     ];
 
     public function boot()
