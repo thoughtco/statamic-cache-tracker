@@ -45,11 +45,11 @@ class ServiceProvider extends AddonServiceProvider
         Permission::group('cache-tracker', 'Cache Tracker', function () {
             Permission::register('view cache tracker tags')
                 ->label(__('View Tags'))
-                ->description(__('Enables the action on listing views to view tags'));
+                ->description(__('Enable the action on listing views to view tags'));
 
             Permission::register('clear cache tracker tags')
                 ->label(__('Clear Tags'))
-                ->description(__('Enables the action on listing views to clear tags'));
+                ->description(__('Enable the action on listing views to clear tags'));
         });
     }
 }
