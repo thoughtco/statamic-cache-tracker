@@ -7,27 +7,23 @@ const props = defineProps({
 });
 
 const getColor = (tag) => {
-    if (tag.indexOf('entry::') === 0) {
-        return 'green';
-    }
-
-    if (tag.indexOf('collection::') === 0) {
+    if (tag.indexOf('collection:') === 0) {
         return 'yellow';
     }
 
-    if (tag.indexOf('term::') === 0) {
+    if (tag.indexOf('term:') === 0) {
         return 'rose';
     }
 
-    if (tag.indexOf('global::') === 0) {
+    if (tag.indexOf('global:') === 0) {
         return 'violet';
     }
 
-    if (tag.indexOf('partial::') === 0) {
+    if (tag.indexOf('partial:') === 0) {
         return 'blue';
     }
 
-    return null;
+    return 'green';
 }
 
 const setShowWhat = (what) => {

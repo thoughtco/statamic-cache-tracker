@@ -26,7 +26,7 @@ class GetUrlsController extends Controller
         }
 
         if ($item instanceof Term) {
-            $item = $item->taxonomyHandle().':'.$item->id();
+            $item = 'term:'.$item->id();
         }
 
         return collect(Tracker::all())
