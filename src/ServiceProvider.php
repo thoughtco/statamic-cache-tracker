@@ -7,6 +7,7 @@ use Statamic\Providers\AddonServiceProvider;
 class ServiceProvider extends AddonServiceProvider
 {
     protected $actions = [
+        Actions\ClearCache::class,
         Actions\ViewCacheTags::class,
     ];
 

@@ -17,6 +17,11 @@ class ClearCache extends Action
         return __('Cache cleared');
     }
 
+    public function icon(): string
+    {
+        return 'rewind';
+    }
+
     public static function title()
     {
         return __('Clear cache');

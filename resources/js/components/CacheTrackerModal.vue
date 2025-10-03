@@ -57,13 +57,13 @@ axios
 <template>
     <div>
         <ui-button-group class="mb-4">
-            <ui-button :variant="show == 'tags' ? 'filled' : 'default'" size="sm" @click="setShowWhat('tags')">Tags</ui-button>
-            <ui-button :variant="show == 'urls' ? 'filled' : 'default'"  size="sm" @click="setShowWhat('urls')">URLs</ui-button>
+            <ui-button :variant="show == 'tags' ? 'primary' : 'default'" size="sm" @click="setShowWhat('tags')">Tags on this URL</ui-button>
+            <ui-button :variant="show == 'urls' ? 'primary' : 'default'"  size="sm" @click="setShowWhat('urls')">URLs with this item</ui-button>
         </ui-button-group>
 
         <div v-if="show == 'tags'">
 
-            <ui-description v-text="__('There are no tags tracked for this item.')" v-if="tags.length < 1"></ui-description>
+            <ui-description v-text="__('There are no tags tracked for :item.', { item: item })" v-if="tags.length < 1"></ui-description>
 
             <ui-description v-text="__('The following tags are being tracked for :item:', { item: item })" v-if="tags.length"></ui-description>
 
@@ -78,7 +78,7 @@ axios
         </div>
 
         <div v-if="show == 'urls'">
-            <ui-description v-text="__('There are no urls tracked containing for :item:', { item: item })" v-if="urls.length < 1"></ui-description>
+            <ui-description v-text="__('There are no urls tracked containing :item.', { item: item })" v-if="urls.length < 1"></ui-description>
 
             <ui-description v-text="__('The following URLs contain :item:', { item: 'ryan' })" v-if="urls.length"></ui-description>
 
