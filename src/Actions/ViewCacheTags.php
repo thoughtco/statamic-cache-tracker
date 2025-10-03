@@ -5,7 +5,6 @@ namespace Thoughtco\StatamicCacheTracker\Actions;
 use Statamic\Actions\Action;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Facades\Blink;
-use Thoughtco\StatamicCacheTracker\Facades\Tracker;
 
 class ViewCacheTags extends Action
 {
@@ -30,6 +29,10 @@ class ViewCacheTags extends Action
 
     public function visibleTo($item)
     {
+        if (! auth()->user()->can('view cache tracker tags')) {
+            return false;
+        }
+
         if (! $item instanceof Entry) {
             return false;
         }

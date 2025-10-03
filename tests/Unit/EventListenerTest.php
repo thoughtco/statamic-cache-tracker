@@ -23,7 +23,7 @@ class EventListenerTest extends TestCase
             return response('');
         };
 
-        $middleware = new CacheTracker();
+        $middleware = new CacheTracker;
         $middleware->handle($request, $next);
 
         $this->assertSame(['test::tag'], collect(Tracker::all())->firstWhere('url', 'http://localhost/')['tags']);
@@ -40,7 +40,7 @@ class EventListenerTest extends TestCase
             return response('');
         };
 
-        $middleware = new CacheTracker();
+        $middleware = new CacheTracker;
         $middleware->handle($request, $next);
 
         $this->assertSame(['test::tag'], collect(Tracker::all())->firstWhere('url', 'http://localhost/')['tags']);

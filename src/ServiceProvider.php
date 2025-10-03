@@ -2,6 +2,7 @@
 
 namespace Thoughtco\StatamicCacheTracker;
 
+use Statamic\Facades\Permission;
 use Statamic\Providers\AddonServiceProvider;
 
 class ServiceProvider extends AddonServiceProvider
@@ -40,5 +41,15 @@ class ServiceProvider extends AddonServiceProvider
         $this->publishes([
             $config => config_path('statamic-cache-tracker.php'),
         ], 'statamic-cache-tracker-config');
+
+        Permission::group('cache-tracker', 'Cache Tracker', function () {
+            Permission::register('view cache tracker tags')
+                ->label(__('View Tags'))
+                ->description(__('Enables the action on listing views to view tags'));
+
+            Permission::register('clear cache tracker tags')
+                ->label(__('Clear Tags'))
+                ->description(__('Enables the action on listing views to clear tags'));
+        });
     }
 }

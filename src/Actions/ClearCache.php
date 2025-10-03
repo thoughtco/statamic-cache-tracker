@@ -29,6 +29,10 @@ class ClearCache extends Action
 
     public function visibleTo($item)
     {
+        if (! auth()->user()->can('clear cache tracker tags')) {
+            return false;
+        }
+
         if (! $item instanceof Entry) {
             return false;
         }
