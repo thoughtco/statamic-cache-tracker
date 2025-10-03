@@ -53,4 +53,13 @@ class ViewCacheTags extends Action
         /** @translation */
         return __('Clear cache');
     }
+
+    public function toArray()
+    {
+        return [
+            ...parent::toArray(),
+            'item_title' => $this->items->first()?->title,
+            'item_url' => $this->items->first()?->absoluteUrl(),
+        ];
+    }
 }

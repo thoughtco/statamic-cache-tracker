@@ -4,6 +4,7 @@ namespace Thoughtco\StatamicCacheTracker\Actions;
 
 use Statamic\Actions\Action;
 use Statamic\Contracts\Entries\Entry;
+use Statamic\Contracts\Taxonomies\Term;
 use Statamic\Facades\Blink;
 use Thoughtco\StatamicCacheTracker\Facades\Tracker;
 
@@ -33,7 +34,7 @@ class ClearCache extends Action
             return false;
         }
 
-        if (! $item instanceof Entry) {
+        if (! ($item instanceof Entry || $item instanceof Term)) {
             return false;
         }
 

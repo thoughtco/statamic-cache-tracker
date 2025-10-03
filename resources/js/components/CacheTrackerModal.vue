@@ -3,7 +3,7 @@ import axios from 'axios';
 import { ref } from 'vue';
 
 const props = defineProps({
-    values: { type: Object, required: true },
+    action: { type: Object, required: true },
 });
 
 const getColor = (tag) => {
@@ -34,20 +34,21 @@ const setShowWhat = (what) => {
     show.value = what;
 }
 
-const item = props.values?.length ? (props.values[0] ?? '') : '';
+const item = props.action?.item_title ?? '';
+const url = props.action?.item_url ?? '';
 const show = ref('tags');
 const tags = ref([]);
 const urls = ref([]);
 
 axios
-    .post(cp_url(`/cache-tracker/tags`), { item: item })
+    .post(cp_url(`/cache-tracker/tags`), { url: url })
     .then(response => {
         tags.value = response.data;
     })
     .catch((e) => { });
 
 axios
-    .post(cp_url(`/cache-tracker/urls`), { item: item })
+    .post(cp_url(`/cache-tracker/urls`), { url: url })
     .then(response => {
         urls.value = response.data;
     })
