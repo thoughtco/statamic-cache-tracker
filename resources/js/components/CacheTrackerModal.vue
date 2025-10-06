@@ -60,9 +60,9 @@ axios
 
         <div v-if="show == 'tags'">
 
-            <ui-description v-text="__('There are no tags tracked for :item.', { item: item })" v-if="tags.length < 1"></ui-description>
+            <ui-description v-text="__('There are no tags tracked on :url.', { url: url })" v-if="tags.length < 1"></ui-description>
 
-            <ui-description v-text="__('The following tags are being tracked for :item:', { item: item })" v-if="tags.length"></ui-description>
+            <ui-description v-text="__('The following tags are being tracked on :url:', { url: url })" v-if="tags.length"></ui-description>
 
             <div class="flex gap-2 mt-4" v-if="tags.length">
 

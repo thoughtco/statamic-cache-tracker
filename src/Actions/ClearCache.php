@@ -28,6 +28,11 @@ class ClearCache extends Action
         return __('Clear cache');
     }
 
+    public function confirmationText()
+    {
+        return __('Are you sure you want to clear the static cache for the url: :url ?', ['url' => $this->items->first()->absoluteUrl()]);
+    }
+
     public function visibleTo($item)
     {
         if (! auth()->user()->can('clear cache tracker tags')) {
