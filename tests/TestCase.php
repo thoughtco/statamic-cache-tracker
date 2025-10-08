@@ -20,7 +20,7 @@ class TestCase extends AddonTestCase
     {
         parent::resolveApplicationConfiguration($app);
 
-        $app['config']->set('app.key', 'base64:' . base64_encode(Encrypter::generateKey($app['config']['app.cipher'])));
+        $app['config']->set('app.key', 'base64:'.base64_encode(Encrypter::generateKey($app['config']['app.cipher'])));
 
         // Assume the pro edition within tests
         $app['config']->set('statamic.editions.pro', true);
@@ -30,7 +30,7 @@ class TestCase extends AddonTestCase
 
         // views for front end routing tests
         $app['config']->set('view.paths', [
-            __DIR__ . '/__fixtures__/resources/views',
+            __DIR__.'/__fixtures__/resources/views',
         ]);
     }
 

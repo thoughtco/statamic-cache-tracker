@@ -85,3 +85,4 @@ To invalidate all pages containing your tracked data call:
 Tracker::flush();
 ```
 
+Alternatively you can use the Cache Tracker Utility in the CP to enter a list of URLs you want to clear.

@@ -23,10 +23,10 @@ class EventListenerTest extends TestCase
             return response('');
         };
 
-        $middleware = new CacheTracker();
+        $middleware = new CacheTracker;
         $middleware->handle($request, $next);
 
-        $this->assertSame(['test::tag'], collect(Tracker::all())->firstWhere('url', 'http://localhost/')['tags']);
+        $this->assertSame(['test::tag'], collect(Tracker::all())->firstWhere('url', 'http://localhost')['tags']);
     }
 
     #[Test]
@@ -40,10 +40,10 @@ class EventListenerTest extends TestCase
             return response('');
         };
 
-        $middleware = new CacheTracker();
+        $middleware = new CacheTracker;
         $middleware->handle($request, $next);
 
-        $this->assertSame(['test::tag'], collect(Tracker::all())->firstWhere('url', 'http://localhost/')['tags']);
+        $this->assertSame(['test::tag'], collect(Tracker::all())->firstWhere('url', 'http://localhost')['tags']);
 
         InvalidateTags::dispatch(['test::tag']);
 
