@@ -10,7 +10,11 @@ class UtilityController extends Controller
 {
     public function __invoke(): array
     {
-        $urls = request()->input('urls');
+        if (! $urls = request()->input('urls')) {
+            return [
+                'message' => __('No URLs provided'),
+            ];
+        }
 
         if ($urls == '*') {
             Tracker::flush();
