@@ -6,7 +6,6 @@ use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Taxonomies\Term;
 use Statamic\Facades\Data;
 use Statamic\Http\Controllers\Controller;
-use Statamic\Taxonomies\LocalizedTerm;
 use Thoughtco\StatamicCacheTracker\Facades\Tracker;
 
 class GetUrlsController extends Controller
