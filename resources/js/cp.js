@@ -1,8 +1,9 @@
 import CacheTrackerModal from './components/CacheTrackerModal.vue';
 import ClearUtility from "./pages/ClearUtility.vue";
+import { inertia } from '@statamic/cms/api';
 
 Statamic.booting(() => {
     Statamic.$components.register('cache-tracker-modal', CacheTrackerModal);
 
-    Statamic.$components.register('Pages/CacheTracker/ClearUtility', ClearUtility);
+   inertia.register('CacheTracker/ClearUtility', ClearUtility);
 });
