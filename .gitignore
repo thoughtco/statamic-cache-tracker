@@ -4,6 +4,5 @@
 /vendor
 composer.lock
 mix-manifest.json
-package-lock.json
 yarn.lock
 .idea/*
