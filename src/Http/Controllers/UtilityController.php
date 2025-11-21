@@ -30,7 +30,13 @@ class UtilityController extends Controller
 
         // remove any non-wildcards first
         $urls->reject(fn ($url) => Str::endsWith($url, '*'))
-            ->each(fn ($url) => Tracker::remove($url));
+            ->each(function ($url) {
+                if (Str::endsWith($url, '/')) {
+                    $url = substr($url, 0, -1);
+                }
+
+                Tracker::remove($url);
+            });
 
         collect(Tracker::all())
             ->each(function ($data) use ($wildcards) {
