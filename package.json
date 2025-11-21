@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "@statamic/cms": "file:./vendor/statamic/cms/resources/js/package",
+        "@statamic/cms": "file:./vendor/statamic/cms/resources/dist-package",
         "axios": "^1.12.2"
     },
     "scripts": {
