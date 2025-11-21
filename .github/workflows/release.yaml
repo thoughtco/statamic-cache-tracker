@@ -1,0 +1,56 @@
+name: Bundle Release Assets
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - released
+      - prereleased
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          tools: composer:v2
+
+      - name: Use Node.js 23.3.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23.3.0
+
+      - name: Install composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install node dependencies
+        run: npm ci
+
+      - name: Build release assets
+        run: npm run build
+
+      - name: Create zip
+        run: tar -czvf dist.tar.gz dist
+
+      - name: Get release
+        id: get_release
+        uses: cardinalby/git-get-release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          latest: true
+
+      - name: Upload dist zip to release
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: ./dist.tar.gz
+          asset_name: dist.tar.gz
+          asset_content_type: application/tar+gz

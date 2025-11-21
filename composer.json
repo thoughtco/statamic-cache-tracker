@@ -11,8 +11,8 @@
         }
     },
     "require": {
-        "php": "^8.2",
-        "pixelfear/composer-dist-plugin": "^0.1.5",
+        "php": "^8.3",
+        "pixelfear/composer-dist-plugin": "^0.1.6",
         "statamic/cms": "^6.0"
     },
     "require-dev": {
@@ -24,6 +24,12 @@
         "phpunit/phpunit": "^12.0"
     },
     "extra": {
+        "download-dist": [
+            {
+                "url": "https://github.com/thoughtco/statamic-cache-tracker/releases/download/{$version}/dist.tar.gz",
+                "path": "dist"
+            }
+        ],
         "statamic": {
             "name": "Statamic Cache Tracker",
             "description": "Keep a record of what items are used on each page and invalidate those pages when they are saved."
