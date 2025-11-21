@@ -42,8 +42,6 @@ jobs:
         uses: cardinalby/git-get-release-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          latest: true
 
       - name: Upload dist zip to release
         uses: actions/upload-release-asset@v1.0.1
