@@ -49,6 +49,10 @@ class CacheTracker
 
         $url = $this->url();
 
+        if (Str::endsWith($url, '/')) {
+            $url = substr($url, 0, -1);
+        }
+
         if (Tracker::has($url)) {
             return $next($request);
         }
@@ -123,13 +127,13 @@ class CacheTracker
             return $next($augmented);
         });
 
-        app(Entry::class)::hook('augmented', function ($augmented, $next) use ($self, $url) {
+        app(Entry::class)::hook('augmented', function ($augmented, $next) use ($self) {
             $self->addContentTag($this->collection()->handle().':'.$this->id());
 
             return $next($augmented);
         });
 
-        Page::hook('augmented', function ($augmented, $next) use ($self, $url) {
+        Page::hook('augmented', function ($augmented, $next) use ($self) {
             if ($entry = $this->entry()) {
                 $self->addContentTag($entry->collection()->handle().':'.$entry->id());
             }
@@ -137,7 +141,7 @@ class CacheTracker
             return $next($augmented);
         });
 
-        LocalizedTerm::hook('augmented', function ($augmented, $next) use ($self, $url) {
+        LocalizedTerm::hook('augmented', function ($augmented, $next) use ($self) {
             $self->addContentTag('term:'.$this->id());
 
             return $next($augmented);
