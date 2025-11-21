@@ -17,7 +17,7 @@ class AdditionalTrackerTest extends TestCase
 
         $this->get('/');
 
-        $this->assertSame(['test::tag', 'pages:home'], collect(Tracker::all())->firstWhere('url', 'http://localhost')['tags']);
+        $this->assertSame(['test::tag', 'pages:home'], collect(Tracker::all())->firstWhere('url', 'http://localhost/')['tags']);
     }
 
     #[Test]
@@ -27,7 +27,7 @@ class AdditionalTrackerTest extends TestCase
 
         $this->get('/');
 
-        $this->assertSame(['additional::tag', 'pages:home'], collect(Tracker::all())->firstWhere('url', 'http://localhost')['tags']);
+        $this->assertSame(['additional::tag', 'pages:home'], collect(Tracker::all())->firstWhere('url', 'http://localhost/')['tags']);
     }
 }
 
