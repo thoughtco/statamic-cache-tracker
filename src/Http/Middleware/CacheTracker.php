@@ -129,6 +129,7 @@ class CacheTracker
 
         app(Entry::class)::hook('augmented', function ($augmented, $next) use ($self) {
             $self->addContentTag($this->collection()->handle().':'.$this->id());
+            $self->addContentTag('collection:'.$this->collection()->handle());
 
             return $next($augmented);
         });
@@ -136,6 +137,7 @@ class CacheTracker
         Page::hook('augmented', function ($augmented, $next) use ($self) {
             if ($entry = $this->entry()) {
                 $self->addContentTag($entry->collection()->handle().':'.$entry->id());
+                $self->addContentTag('collection:'.$entry->collection()->handle());
             }
 
             return $next($augmented);
@@ -143,6 +145,7 @@ class CacheTracker
 
         LocalizedTerm::hook('augmented', function ($augmented, $next) use ($self) {
             $self->addContentTag('term:'.$this->id());
+            $self->addContentTag('taxonomy:'.$this->taxonomy()->handle());
 
             return $next($augmented);
         });

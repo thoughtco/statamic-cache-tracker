@@ -81,7 +81,7 @@ class Manager
             $storeTags = $data['tags'];
             $url = $data['url'];
 
-            if (count(array_intersect($tags, $storeTags)) > 0) {
+            if ($this->tagsMatch($tags, $storeTags)) {
                 $urls[] = $url;
 
                 unset($storeData[$key]);
@@ -95,6 +95,25 @@ class Manager
         }
 
         return $this;
+    }
+
+    private function tagsMatch(array $tagsToInvalidate, array $storeTags): bool
+    {
+        foreach ($tagsToInvalidate as $tag) {
+            // Handle wildcard tags (ending with *)
+            if (str_ends_with($tag, '*')) {
+                $prefix = substr($tag, 0, -1);
+                foreach ($storeTags as $storeTag) {
+                    if (str_starts_with($storeTag, $prefix)) {
+                        return true;
+                    }
+                }
+            } elseif (in_array($tag, $storeTags)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function invalidateUrls($urls)
