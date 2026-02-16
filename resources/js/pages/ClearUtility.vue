@@ -17,7 +17,7 @@ const clearCache = async () => {
         <ui-button class="btn-primary" v-text="__('Clear everything')" @click="urls = '*'; clearCache();" />
     </ui-header>
 
-    <ui-panel class="h-full flex flex-col">
+    <ui-panel class="flex flex-col">
         <ui-panel-header class="flex items-center justify-between min-h-10">
             <ui-heading>{{ __('Enter URLs to clear, with each on a new line. You can use * as a wildcard at the end of your URL.') }}</ui-heading>
         </ui-panel-header>
