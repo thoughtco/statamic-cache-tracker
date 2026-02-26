@@ -102,27 +102,29 @@ BLADE;
     public function it_tracks_nav_tag_when_handle_is_nav_instance()
     {
         // Create a navigation structure
-        $nav = Facades\Nav::make('sidebar')
+        $nav = tap(Facades\Nav::make('sidebar')
             ->title('Sidebar')
             ->expectsRoot(true)
-            ->collections(['pages'])
+            ->collections(['pages']))
             ->save();
 
+        // The template uses a blueprint field that returns a Nav instance
         $view = <<<'BLADE'
-{{ nav :handle="nav" }}
+{{ nav :handle="my_nav" }}
     {{ title }}
 {{ /nav }}
 BLADE;
 
         file_put_contents($this->viewPath('nav-test.antlers.html'), $view);
 
+        // Create entry with nav field that returns Nav instance
         Facades\Entry::make()
             ->id('nav-test-page')
             ->slug('nav-test')
             ->collection('pages')
             ->data([
                 'template' => 'nav-test',
-                'nav' => $nav,
+                'my_nav' => $nav,
             ])
             ->save();
 
