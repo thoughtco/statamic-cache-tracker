@@ -13,6 +13,7 @@ use Statamic\Contracts\Globals\Variables;
 use Statamic\Facades\URL;
 use Statamic\Forms;
 use Statamic\StaticCaching\Cacher;
+use Statamic\Structures\Nav;
 use Statamic\Structures\Page;
 use Statamic\Support\Str;
 use Statamic\Tags;
@@ -181,7 +182,13 @@ class CacheTracker
         });
 
         Tags\Nav::hook('init', function ($value, $next) use ($self) {
-            $handle = 'nav:'.$this->params->get('handle', $this->tag != 'nav:index' ? Str::after($this->tag, 'nav:') : 'collection::pages');
+            $handle = $this->params->get('handle', $this->tag != 'nav:index' ? Str::after($this->tag, 'nav:') : 'collection::pages');
+
+            if ($handle instanceof Nav) {
+                $handle = $handle->handle();
+            }
+
+            $handle = 'nav:'.$handle;
             $self->addContentTag($handle);
 
             return $next($value);

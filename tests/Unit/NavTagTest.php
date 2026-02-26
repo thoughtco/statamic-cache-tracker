@@ -98,6 +98,41 @@ BLADE;
         $this->assertContains('nav:collection::pages', $tags);
     }
 
+    #[Test]
+    public function it_tracks_nav_tag_when_handle_is_nav_instance()
+    {
+        // Create a navigation structure
+        $nav = Facades\Nav::make('sidebar')
+            ->title('Sidebar')
+            ->expectsRoot(true)
+            ->collections(['pages'])
+            ->save();
+
+        $view = <<<'BLADE'
+{{ nav :handle="nav" }}
+    {{ title }}
+{{ /nav }}
+BLADE;
+
+        file_put_contents($this->viewPath('nav-test.antlers.html'), $view);
+
+        Facades\Entry::make()
+            ->id('nav-test-page')
+            ->slug('nav-test')
+            ->collection('pages')
+            ->data([
+                'template' => 'nav-test',
+                'nav' => $nav,
+            ])
+            ->save();
+
+        $this->get('/nav-test');
+
+        $tags = collect(Tracker::all())->first()['tags'] ?? [];
+
+        $this->assertContains('nav:sidebar', $tags);
+    }
+
     protected function viewPath($name)
     {
         return __DIR__.'/../__fixtures__/resources/views/'.$name;
