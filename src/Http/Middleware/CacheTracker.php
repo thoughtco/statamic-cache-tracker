@@ -181,7 +181,7 @@ class CacheTracker
         });
 
         Tags\Nav::hook('init', function ($value, $next) use ($self) {
-            $handle = $this->params->get('handle') ? 'nav:'.$this->params->get('handle') : $this->tag;
+            $handle = 'nav:'.$this->params->get('handle', 'collection::pages');
             $self->addContentTag($handle);
 
             return $next($value);
