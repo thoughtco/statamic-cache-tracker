@@ -43,6 +43,10 @@ class ClearCache extends Action
             return false;
         }
 
+        if ($item instanceof Term) {
+            return true;
+        }
+
         return ! Blink::once(
             'cache-action::'.$item->collectionHandle.'::'.$item->locale(),
             fn () => is_null($item->collection()->route($item->locale()))
