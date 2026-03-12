@@ -9,6 +9,12 @@ use Thoughtco\StatamicCacheTracker\Http\Controllers\UtilityController;
 
 class ServiceProvider extends AddonServiceProvider
 {
+    protected $commands = [
+        Commands\Flush::class,
+        Commands\Invalidate::class,
+        Commands\ListUrls::class,
+    ];
+
     protected $actions = [
         Actions\ClearCache::class,
         Actions\ViewCacheTags::class,
