@@ -7,3 +7,4 @@ mix-manifest.json
 package-lock.json
 yarn.lock
 .idea/*
+.claude/*
