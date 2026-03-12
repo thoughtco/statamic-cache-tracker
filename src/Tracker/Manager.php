@@ -135,6 +135,8 @@ class Manager
     {
         $this->invalidateUrls([$url]);
 
-        $this->cacheStore()->forget(md5($url));
+        $storeData = $this->all();
+        unset($storeData[md5($url)]);
+        $this->cacheStore()->forever($this->cacheKey, $storeData);
     }
 }

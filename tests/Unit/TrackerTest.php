@@ -93,6 +93,37 @@ class TrackerTest extends TestCase
     }
 
     #[Test]
+    public function it_removes_a_url()
+    {
+        Tracker::add('/page1', ['products:1']);
+        Tracker::add('/page2', ['products:2']);
+
+        $this->assertCount(2, Tracker::all());
+
+        Tracker::remove('/page1');
+
+        $this->assertCount(1, Tracker::all());
+        $this->assertNull(Tracker::get('/page1'));
+        $this->assertNotNull(Tracker::get('/page2'));
+    }
+
+    #[Test]
+    public function it_removes_a_url_and_does_not_retrack_on_next_visit()
+    {
+        $this->get('/');
+
+        $this->assertCount(1, Tracker::all());
+
+        Tracker::remove(collect(Tracker::all())->first()['url']);
+
+        $this->assertCount(0, Tracker::all());
+
+        $this->get('/');
+
+        $this->assertCount(1, Tracker::all());
+    }
+
+    #[Test]
     public function it_invalidates_by_exact_tag_match()
     {
         Tracker::add('/page1', ['products:1', 'category:electronics']);
