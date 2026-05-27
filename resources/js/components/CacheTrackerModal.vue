@@ -64,7 +64,7 @@ axios
 
             <ui-description v-text="__('The following tags are being tracked on :url:', { url: url })" v-if="tags.length"></ui-description>
 
-            <div class="flex gap-2 mt-4" v-if="tags.length">
+            <div class="flex flex-wrap gap-2 mt-4" v-if="tags.length">
 
                 <template v-for="tag in tags">
                     <ui-badge pill :color="getColor(tag)" v-text="tag"></ui-badge>
@@ -79,7 +79,7 @@ axios
 
             <ui-description v-text="__('The following URLs contain :item:', { item: 'ryan' })" v-if="urls.length"></ui-description>
 
-            <div class="flex gap-2 mt-4" v-if="urls.length">
+            <div class="flex flex-wrap gap-2 mt-4" v-if="urls.length">
 
                 <template v-for="url in urls">
                     <a :href="url" v-text="url"></a><br />
