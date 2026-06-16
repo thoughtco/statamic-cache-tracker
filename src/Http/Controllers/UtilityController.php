@@ -41,7 +41,17 @@ class UtilityController extends Controller
         collect(Tracker::all())
             ->each(function ($data) use ($wildcards) {
                 $wildcards->each(function ($wildcard) use ($data) {
-                    if (Str::startsWith($data['url'], Str::beforeLast($wildcard, '*'))) {
+                    $prefix = Str::beforeLast($wildcard, '*');
+
+                    if (Str::startsWith($prefix, ['http://', 'https://'])) {
+                        $matches = Str::startsWith($data['url'], $prefix);
+                    } else {
+                        $prefix = '/'.ltrim($prefix, '/');
+                        $urlPath = parse_url($data['url'], PHP_URL_PATH) ?? $data['url'];
+                        $matches = str_contains($urlPath, $prefix);
+                    }
+
+                    if ($matches) {
                         Tracker::remove($data['url']);
                     }
                 });
