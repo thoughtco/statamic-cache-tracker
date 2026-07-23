@@ -16,7 +16,7 @@ class GetUrlsController extends Controller
             return [];
         }
 
-        if (! $item = Data::find($url)) {
+        if (! $item = Data::findByRequestUrl($url)) {
             return [];
         }
 
