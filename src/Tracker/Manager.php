@@ -119,6 +119,13 @@ class Manager
     private function invalidateUrls($urls)
     {
         $cacher = app(Cacher::class);
+
+        if (config('statamic.static_caching.background_recache', false)) {
+            $cacher->refreshUrls($urls);
+
+            return;
+        }
+
         $cacher->invalidateUrls($urls);
     }
 
