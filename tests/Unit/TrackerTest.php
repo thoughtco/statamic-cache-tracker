@@ -3,7 +3,9 @@
 namespace Thoughtco\StatamicCacheTracker\Tests\Unit;
 
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\Test;
+use Statamic\Console\Commands\StaticWarmJob;
 use Statamic\Events\UrlInvalidated;
 use Thoughtco\StatamicCacheTracker\Events\ContentTracked;
 use Thoughtco\StatamicCacheTracker\Facades\Tracker;
@@ -211,5 +213,37 @@ class TrackerTest extends TestCase
         Tracker::invalidate(['videos:*']);
 
         $this->assertCount(2, Tracker::all());
+    }
+
+    #[Test]
+    public function it_invalidates_the_static_cache_immediately_by_default()
+    {
+        $this->get('/');
+
+        Queue::fake();
+        Event::fake([UrlInvalidated::class]);
+
+        Tracker::invalidate(['collection:pages']);
+
+        Queue::assertNotPushed(StaticWarmJob::class);
+        Event::assertDispatched(UrlInvalidated::class);
+        $this->assertCount(0, Tracker::all());
+    }
+
+    #[Test]
+    public function it_queues_a_recache_job_instead_of_invalidating_when_background_recache_is_enabled()
+    {
+        config(['statamic.static_caching.background_recache' => true]);
+
+        $this->get('/');
+
+        Queue::fake();
+        Event::fake([UrlInvalidated::class]);
+
+        Tracker::invalidate(['collection:pages']);
+
+        Queue::assertPushed(StaticWarmJob::class);
+        Event::assertNotDispatched(UrlInvalidated::class);
+        $this->assertCount(0, Tracker::all());
     }
 }
