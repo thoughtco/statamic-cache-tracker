@@ -77,7 +77,7 @@ axios
         <div v-if="show == 'urls'">
             <ui-description v-text="__('There are no urls tracked containing :item.', { item: item })" v-if="urls.length < 1"></ui-description>
 
-            <ui-description v-text="__('The following URLs contain :item:', { item: 'ryan' })" v-if="urls.length"></ui-description>
+            <ui-description v-text="__('The following URLs contain :item:', { item: item })" v-if="urls.length"></ui-description>
 
             <div class="flex flex-wrap gap-2 mt-4" v-if="urls.length">
 
