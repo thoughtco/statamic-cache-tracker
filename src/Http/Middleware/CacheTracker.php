@@ -10,9 +10,10 @@ use Livewire\Livewire;
 use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
+use Statamic\Facades\StaticCache;
 use Statamic\Facades\URL;
 use Statamic\Forms;
-use Statamic\StaticCaching\Cacher;
+use Statamic\StaticCaching\RecacheToken;
 use Statamic\Structures\Nav;
 use Statamic\Structures\Page;
 use Statamic\Support\Str;
@@ -42,19 +43,16 @@ class CacheTracker
             return $next($request);
         }
 
-        $cacher = app(Cacher::class);
-
-        if ($cacher && $cacher->hasCachedPage($request)) {
-            return $next($request);
-        }
-
         $url = $this->url();
 
         if (Str::endsWith($url, '/')) {
             $url = substr($url, 0, -1);
         }
 
-        if (Tracker::has($url)) {
+        // A background-recache request re-renders a page that is still cached, so
+        // let it through even when the URL is already tracked - this is how the
+        // stored tags get refreshed when a page's content dependencies change.
+        if (! $this->isRecacheRequest($request) && Tracker::has($url)) {
             return $next($request);
         }
 
@@ -100,6 +98,15 @@ class CacheTracker
 
         // Only GET requests. This disables the cache during live preview.
         return $request->method() === 'GET' && ! Str::startsWith($request->path(), [config('statamic.routes.action', '!').'/', config('statamic.assets.image_manipulation.route')]);
+    }
+
+    private function isRecacheRequest($request): bool
+    {
+        if (! $token = $request->input(StaticCache::recacheTokenParameter())) {
+            return false;
+        }
+
+        return StaticCache::checkRecacheToken($token);
     }
 
     private function setupAdditionalTracking()
@@ -206,6 +213,10 @@ class CacheTracker
 
     private function url()
     {
-        return URL::makeAbsolute(class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent());
+        $url = URL::makeAbsolute(class_exists(Livewire::class) ? Livewire::originalUrl() : URL::getCurrent());
+
+        // Strip the background-recache token so a recache request keys the same
+        // entry as the original page rather than creating an orphaned one.
+        return RecacheToken::removeFromUrl($url);
     }
 }

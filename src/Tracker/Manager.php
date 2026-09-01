@@ -76,20 +76,30 @@ class Manager
     {
         $storeData = $this->all();
 
+        // With background recaching the page is refreshed in place rather than
+        // deleted, and the recache request re-tracks the URL with fresh tags. We
+        // keep the existing entry so that if the recache job fails or is dropped
+        // the URL stays tracked and future saves will retry it, instead of being
+        // orphaned in the static cache with no tags.
+        $keepEntries = config('statamic.static_caching.background_recache', false);
+
         $urls = [];
         foreach ($storeData as $key => $data) {
-            $storeTags = $data['tags'];
-            $url = $data['url'];
+            if (! $this->tagsMatch($tags, $data['tags'])) {
+                continue;
+            }
 
-            if ($this->tagsMatch($tags, $storeTags)) {
-                $urls[] = $url;
+            $urls[] = $data['url'];
 
+            if (! $keepEntries) {
                 unset($storeData[$key]);
             }
         }
 
         if (! empty($urls)) {
-            $this->cacheStore()->forever($this->cacheKey, $storeData);
+            if (! $keepEntries) {
+                $this->cacheStore()->forever($this->cacheKey, $storeData);
+            }
 
             $this->invalidateUrls($urls);
         }

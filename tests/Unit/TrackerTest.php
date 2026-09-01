@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\Test;
 use Statamic\Console\Commands\StaticWarmJob;
 use Statamic\Events\UrlInvalidated;
+use Statamic\Facades\StaticCache;
 use Thoughtco\StatamicCacheTracker\Events\ContentTracked;
 use Thoughtco\StatamicCacheTracker\Facades\Tracker;
 use Thoughtco\StatamicCacheTracker\Tests\TestCase;
@@ -244,6 +245,44 @@ class TrackerTest extends TestCase
 
         Queue::assertPushed(StaticWarmJob::class);
         Event::assertNotDispatched(UrlInvalidated::class);
-        $this->assertCount(0, Tracker::all());
+
+        // The entry is retained so that if the recache job fails or is dropped
+        // the URL stays tracked and future saves will retry it, instead of being
+        // orphaned in the static cache with no tags.
+        $this->assertCount(1, Tracker::all());
+        $this->assertSame(['pages:home', 'collection:pages'], collect(Tracker::all())->first()['tags']);
+    }
+
+    #[Test]
+    public function it_refreshes_tags_for_an_already_tracked_url_on_a_recache_request()
+    {
+        $this->get('/');
+
+        $this->assertSame(['pages:home', 'collection:pages'], collect(Tracker::all())->first()['tags']);
+
+        Tracker::addAdditionalTracker(function ($tracker, $next) {
+            $tracker->addContentTag('fresh::tag');
+        });
+
+        $token = StaticCache::recacheTokenParameter().'='.StaticCache::recacheToken();
+
+        $this->get('/?'.$token);
+
+        $this->assertCount(1, Tracker::all());
+        $this->assertSame(['fresh::tag', 'pages:home', 'collection:pages'], collect(Tracker::all())->first()['tags']);
+    }
+
+    #[Test]
+    public function it_does_not_retrack_an_already_tracked_url_on_a_normal_request()
+    {
+        $this->get('/');
+
+        Tracker::addAdditionalTracker(function ($tracker, $next) {
+            $tracker->addContentTag('fresh::tag');
+        });
+
+        $this->get('/');
+
+        $this->assertSame(['pages:home', 'collection:pages'], collect(Tracker::all())->first()['tags']);
     }
 }
