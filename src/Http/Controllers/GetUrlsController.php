@@ -16,7 +16,7 @@ class GetUrlsController extends Controller
             return [];
         }
 
-        if (! $item = Data::find($url)) {
+        if (! $item = Data::findByRequestUrl($url)) {
             return [];
         }
 
@@ -30,6 +30,8 @@ class GetUrlsController extends Controller
 
         return collect(Tracker::all())
             ->filter(fn ($tracked) => in_array($item, $tracked['tags']))
+            ->pluck('url')
+            ->values()
             ->all();
     }
 }
