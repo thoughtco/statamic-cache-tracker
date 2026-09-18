@@ -10,6 +10,7 @@ use Livewire\Livewire;
 use Statamic\Contracts\Assets\Asset;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Contracts\Globals\Variables;
+use Statamic\Facades\Collection;
 use Statamic\Facades\StaticCache;
 use Statamic\Facades\URL;
 use Statamic\Forms;
@@ -135,12 +136,19 @@ class CacheTracker
             return $next($augmented);
         });
 
-        app(Entry::class)::hook('augmented', function ($augmented, $next) use ($self) {
+        $trackEntry = function ($augmented, $next) use ($self) {
             $self->addContentTag($this->collection()->handle().':'.$this->id());
             $self->addContentTag('collection:'.$this->collection()->handle());
 
             return $next($augmented);
-        });
+        };
+
+        Collection::all()
+            ->map->entryClass()
+            ->push(app(Entry::class)::class)
+            ->filter()
+            ->unique()
+            ->each(fn ($class) => $class::hook('augmented', $trackEntry));
 
         Page::hook('augmented', function ($augmented, $next) use ($self) {
             if ($entry = $this->entry()) {
