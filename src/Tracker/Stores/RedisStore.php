@@ -33,7 +33,7 @@ class RedisStore implements Store
         $old = $this->get($key);
         $removed = $old ? array_diff($old['tags'], $tags) : [];
 
-        $this->batch(function ($redis) use ($key, $url, $tags, $removed) {
+        $this->atomically(function ($redis) use ($key, $url, $tags, $removed) {
             $redis->hset($this->urlsKey(), $key, $this->encode($url, $tags));
 
             foreach ($tags as $tag) {
@@ -95,7 +95,7 @@ class RedisStore implements Store
                 }
             }
 
-            $this->batch(function ($redis) use ($chunk, $byTag) {
+            $this->atomically(function ($redis) use ($chunk, $byTag) {
                 $redis->hdel($this->urlsKey(), ...$chunk);
 
                 foreach ($byTag as $tag => $keys) {
@@ -184,13 +184,35 @@ class RedisStore implements Store
      */
     private function batch(callable $callback): void
     {
-        if ($this->redis instanceof PhpRedisClusterConnection || $this->redis instanceof PredisClusterConnection) {
+        if ($this->isCluster()) {
             $callback($this->redis);
 
             return;
         }
 
         $this->redis->pipeline($callback);
+    }
+
+    /**
+     * Apply a record change and its tag set changes as one MULTI/EXEC, so two
+     * writes to the same URL can't interleave and leave the record listing a
+     * tag whose set no longer contains the URL. Cluster connections can't run
+     * a transaction across slots, so there the commands are sent one by one.
+     */
+    private function atomically(callable $callback): void
+    {
+        if ($this->isCluster()) {
+            $callback($this->redis);
+
+            return;
+        }
+
+        $this->redis->transaction($callback);
+    }
+
+    private function isCluster(): bool
+    {
+        return $this->redis instanceof PhpRedisClusterConnection || $this->redis instanceof PredisClusterConnection;
     }
 
     private function encode(string $url, array $tags): string
