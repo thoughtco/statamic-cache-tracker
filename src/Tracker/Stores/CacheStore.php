@@ -116,8 +116,12 @@ class CacheStore implements Store
         }
 
         $buckets = [];
-        foreach ($exact as $tag) {
-            $buckets[$tag] = array_keys($this->cache->get($this->tagKey($tag)) ?? []);
+        foreach (array_chunk($exact, self::CHUNK) as $chunk) {
+            $values = $this->cache->many(array_map(fn ($tag) => $this->tagKey($tag), $chunk));
+
+            foreach ($chunk as $tag) {
+                $buckets[$tag] = array_keys($values[$this->tagKey($tag)] ?? []);
+            }
         }
 
         $records = $this->many(array_unique(array_merge(...array_values($buckets ?: [[]]))));

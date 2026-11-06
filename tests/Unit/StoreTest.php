@@ -115,6 +115,23 @@ class StoreTest extends TestCase
 
     #[Test]
     #[DataProvider('drivers')]
+    public function it_matches_a_long_list_of_tags(string $driver)
+    {
+        $store = $this->useDriver($driver);
+
+        for ($i = 0; $i < 50; $i++) {
+            $store->put("url-$i", "/url-$i", ["variant:$i", 'shared']);
+        }
+
+        // more tags than one chunk, most of them unknown
+        $tags = array_map(fn ($i) => "variant:$i", range(0, 2499));
+
+        $this->assertCount(50, $store->matching($tags));
+        $this->assertSame(['url-3', 'url-7'], array_keys($store->matching(['variant:3', 'missing', 'variant:7'])));
+    }
+
+    #[Test]
+    #[DataProvider('drivers')]
     public function it_imports_without_overwriting_existing_records(string $driver)
     {
         $store = $this->useDriver($driver);

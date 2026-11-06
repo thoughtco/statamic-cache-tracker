@@ -33,7 +33,7 @@ class RedisStore implements Store
         $old = $this->get($key);
         $removed = $old ? array_diff($old['tags'], $tags) : [];
 
-        $this->batch(function ($redis) use ($key, $url, $tags, $removed) {
+        $this->atomically(function ($redis) use ($key, $url, $tags, $removed) {
             $redis->hset($this->urlsKey(), $key, $this->encode($url, $tags));
 
             foreach ($tags as $tag) {
@@ -95,7 +95,7 @@ class RedisStore implements Store
                 }
             }
 
-            $this->batch(function ($redis) use ($chunk, $byTag) {
+            $this->atomically(function ($redis) use ($chunk, $byTag) {
                 $redis->hdel($this->urlsKey(), ...$chunk);
 
                 foreach ($byTag as $tag => $keys) {
@@ -134,8 +134,8 @@ class RedisStore implements Store
         }
 
         $keys = [];
-        foreach (array_unique($exact) as $tag) {
-            foreach ($this->redis->smembers($this->tagKey($tag)) ?: [] as $key) {
+        foreach ($this->membersOf(array_unique($exact)) as $members) {
+            foreach ($members as $key) {
                 $keys[$key] = true;
             }
         }
@@ -161,6 +161,39 @@ class RedisStore implements Store
         $this->redis->del($this->tagsKey());
     }
 
+    /**
+     * Get the URL keys in each tag's set, pipelining the lookups so a long
+     * list of tags doesn't cost one round trip per tag.
+     *
+     * @return array<int, array> one list of URL keys per tag
+     */
+    private function membersOf(array $tags): array
+    {
+        $results = [];
+
+        foreach (array_chunk(array_values($tags), self::CHUNK) as $chunk) {
+            if ($this->isCluster()) {
+                foreach ($chunk as $tag) {
+                    $results[] = $this->redis->smembers($this->tagKey($tag)) ?: [];
+                }
+
+                continue;
+            }
+
+            $replies = $this->redis->pipeline(function ($redis) use ($chunk) {
+                foreach ($chunk as $tag) {
+                    $redis->smembers($this->tagKey($tag));
+                }
+            });
+
+            foreach ($replies as $members) {
+                $results[] = is_array($members) ? $members : [];
+            }
+        }
+
+        return $results;
+    }
+
     private function many(array $keys): array
     {
         $records = [];
@@ -184,13 +217,35 @@ class RedisStore implements Store
      */
     private function batch(callable $callback): void
     {
-        if ($this->redis instanceof PhpRedisClusterConnection || $this->redis instanceof PredisClusterConnection) {
+        if ($this->isCluster()) {
             $callback($this->redis);
 
             return;
         }
 
         $this->redis->pipeline($callback);
+    }
+
+    /**
+     * Apply a record change and its tag set changes as one MULTI/EXEC, so two
+     * writes to the same URL can't interleave and leave the record listing a
+     * tag whose set no longer contains the URL. Cluster connections can't run
+     * a transaction across slots, so there the commands are sent one by one.
+     */
+    private function atomically(callable $callback): void
+    {
+        if ($this->isCluster()) {
+            $callback($this->redis);
+
+            return;
+        }
+
+        $this->redis->transaction($callback);
+    }
+
+    private function isCluster(): bool
+    {
+        return $this->redis instanceof PhpRedisClusterConnection || $this->redis instanceof PredisClusterConnection;
     }
 
     private function encode(string $url, array $tags): string
