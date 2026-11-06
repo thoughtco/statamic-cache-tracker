@@ -3,27 +3,30 @@
 namespace Thoughtco\StatamicCacheTracker\Tracker;
 
 use Closure;
-use Illuminate\Support\Arr;
+use Illuminate\Cache\RedisStore as IlluminateRedisStore;
+use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use Statamic\StaticCaching\Cacher;
 use Thoughtco\StatamicCacheTracker\Events\ContentTracked;
+use Thoughtco\StatamicCacheTracker\Tracker\Stores\CacheStore;
+use Thoughtco\StatamicCacheTracker\Tracker\Stores\RedisStore;
+use Thoughtco\StatamicCacheTracker\Tracker\Stores\Store;
 
 class Manager
 {
-    private string $cacheKey = 'tracker::urls';
+    /**
+     * Older versions kept every URL in one array under this key.
+     */
+    public const LEGACY_CACHE_KEY = 'tracker::urls';
 
     private array $pipelines = [];
 
+    private ?Store $store = null;
+
     public function add(string $url, array $tags = [])
     {
-        $storeData = $this->all();
-        $storeData[md5($url)] = [
-            'url' => $url,
-            'tags' => collect($tags)->unique()->values()->all(),
-        ];
-
-        $this->cacheStore()->forever($this->cacheKey, $storeData);
+        $this->store()->put(md5($url), $url, collect($tags)->unique()->values()->all());
 
         ContentTracked::dispatch($url, $tags);
 
@@ -43,7 +46,7 @@ class Manager
 
     public function all()
     {
-        return $this->cacheStore()->get($this->cacheKey) ?? [];
+        return $this->store()->all();
     }
 
     public function cacheStore()
@@ -57,9 +60,34 @@ class Manager
         return $store;
     }
 
+    public function store(): Store
+    {
+        if ($this->store) {
+            return $this->store;
+        }
+
+        $this->store = $this->resolveStore();
+
+        $this->migrateLegacyData();
+
+        return $this->store;
+    }
+
+    private function resolveStore(): Store
+    {
+        $cache = $this->cacheStore();
+        $store = $cache->getStore();
+
+        if ($store instanceof IlluminateRedisStore) {
+            return new RedisStore($store->connection(), $store->getPrefix().'cache-tracker:');
+        }
+
+        return new CacheStore($cache);
+    }
+
     public function get(string $url)
     {
-        return $this->all()[md5($url)] ?? null;
+        return $this->store()->get(md5($url));
     }
 
     public function getAdditionalTrackers()
@@ -69,61 +97,37 @@ class Manager
 
     public function has(string $url)
     {
-        return Arr::exists($this->all(), md5($url));
+        return $this->get($url) !== null;
+    }
+
+    /**
+     * Get the tracked records with a tag matching any of the given tags.
+     */
+    public function findByTags(array $tags): array
+    {
+        return $this->store()->matching($tags);
     }
 
     public function invalidate(array $tags = [])
     {
-        $storeData = $this->all();
+        $matches = $this->store()->matching($tags);
+
+        if (empty($matches)) {
+            return $this;
+        }
 
         // With background recaching the page is refreshed in place rather than
         // deleted, and the recache request re-tracks the URL with fresh tags. We
         // keep the existing entry so that if the recache job fails or is dropped
         // the URL stays tracked and future saves will retry it, instead of being
         // orphaned in the static cache with no tags.
-        $keepEntries = config('statamic.static_caching.background_recache', false);
-
-        $urls = [];
-        foreach ($storeData as $key => $data) {
-            if (! $this->tagsMatch($tags, $data['tags'])) {
-                continue;
-            }
-
-            $urls[] = $data['url'];
-
-            if (! $keepEntries) {
-                unset($storeData[$key]);
-            }
+        if (! config('statamic.static_caching.background_recache', false)) {
+            $this->store()->forget(array_keys($matches));
         }
 
-        if (! empty($urls)) {
-            if (! $keepEntries) {
-                $this->cacheStore()->forever($this->cacheKey, $storeData);
-            }
-
-            $this->invalidateUrls($urls);
-        }
+        $this->invalidateUrls(array_values(array_column($matches, 'url')));
 
         return $this;
-    }
-
-    private function tagsMatch(array $tagsToInvalidate, array $storeTags): bool
-    {
-        foreach ($tagsToInvalidate as $tag) {
-            // Handle wildcard tags (ending with *)
-            if (str_ends_with($tag, '*')) {
-                $prefix = substr($tag, 0, -1);
-                foreach ($storeTags as $storeTag) {
-                    if (str_starts_with($storeTag, $prefix)) {
-                        return true;
-                    }
-                }
-            } elseif (in_array($tag, $storeTags)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private function invalidateUrls($urls)
@@ -145,15 +149,45 @@ class Manager
 
         $this->invalidateUrls($urls);
 
-        $this->cacheStore()->forever($this->cacheKey, []);
+        $this->store()->flush();
     }
 
     public function remove(string $url)
     {
         $this->invalidateUrls([$url]);
 
-        $storeData = $this->all();
-        unset($storeData[md5($url)]);
-        $this->cacheStore()->forever($this->cacheKey, $storeData);
+        $this->store()->forget([md5($url)]);
+    }
+
+    /**
+     * Move data from the old single-key format into the current store.
+     */
+    private function migrateLegacyData(): void
+    {
+        $cache = $this->cacheStore();
+
+        if (! $cache->has(self::LEGACY_CACHE_KEY)) {
+            return;
+        }
+
+        $migrate = function () use ($cache) {
+            $records = collect($cache->get(self::LEGACY_CACHE_KEY) ?? [])
+                ->filter(fn ($record) => is_array($record) && isset($record['url'], $record['tags']))
+                ->map(fn ($record) => ['url' => $record['url'], 'tags' => array_values($record['tags'])])
+                ->all();
+
+            $this->store->import($records);
+
+            $cache->forget(self::LEGACY_CACHE_KEY);
+        };
+
+        if (! $cache->getStore() instanceof LockProvider) {
+            $migrate();
+
+            return;
+        }
+
+        // Only one process migrates; the others carry on without waiting.
+        $cache->getStore()->lock(self::LEGACY_CACHE_KEY.':migrating', 600)->get($migrate);
     }
 }

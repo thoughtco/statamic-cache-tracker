@@ -55,7 +55,7 @@ class TrackerTest extends TestCase
     {
         Event::fake();
 
-        Tracker::add('/', ['some:thing']);
+        Tracker::add('http://localhost', ['some:thing']);
 
         Tracker::addAdditionalTracker(function ($tracker, $next) {
             $tracker->addContentTag('test::tag');
@@ -63,7 +63,8 @@ class TrackerTest extends TestCase
 
         $this->get('/');
 
-        $this->assertSame(['some:thing'], collect(Tracker::all())->first()['tags']);
+        $this->assertCount(1, Tracker::all());
+        $this->assertSame(['some:thing'], Tracker::get('http://localhost')['tags']);
     }
 
     #[Test]

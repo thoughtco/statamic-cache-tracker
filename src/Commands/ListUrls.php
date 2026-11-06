@@ -13,7 +13,7 @@ class ListUrls extends Command
 
     public function handle()
     {
-        $all = collect(Tracker::all());
+        $all = collect(Tracker::all())->sortBy('url');
 
         if ($filter = $this->option('url')) {
             $prefix = rtrim($filter, '*');

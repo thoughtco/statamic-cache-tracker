@@ -40,6 +40,13 @@ class ServiceProvider extends AddonServiceProvider
         'hotFile' => __DIR__.'/../dist/hot',
     ];
 
+    public function register()
+    {
+        parent::register();
+
+        $this->app->singleton(Tracker\Manager::class);
+    }
+
     public function boot()
     {
         parent::boot();

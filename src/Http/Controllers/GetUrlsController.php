@@ -28,8 +28,7 @@ class GetUrlsController extends Controller
             $item = 'term:'.$item->id();
         }
 
-        return collect(Tracker::all())
-            ->filter(fn ($tracked) => in_array($item, $tracked['tags']))
+        return collect(Tracker::findByTags([$item]))
             ->pluck('url')
             ->values()
             ->all();
