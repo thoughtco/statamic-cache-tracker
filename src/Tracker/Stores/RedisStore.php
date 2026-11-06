@@ -134,8 +134,8 @@ class RedisStore implements Store
         }
 
         $keys = [];
-        foreach (array_unique($exact) as $tag) {
-            foreach ($this->redis->smembers($this->tagKey($tag)) ?: [] as $key) {
+        foreach ($this->membersOf(array_unique($exact)) as $members) {
+            foreach ($members as $key) {
                 $keys[$key] = true;
             }
         }
@@ -159,6 +159,39 @@ class RedisStore implements Store
 
         $this->redis->del($this->urlsKey());
         $this->redis->del($this->tagsKey());
+    }
+
+    /**
+     * Get the URL keys in each tag's set, pipelining the lookups so a long
+     * list of tags doesn't cost one round trip per tag.
+     *
+     * @return array<int, array> one list of URL keys per tag
+     */
+    private function membersOf(array $tags): array
+    {
+        $results = [];
+
+        foreach (array_chunk(array_values($tags), self::CHUNK) as $chunk) {
+            if ($this->isCluster()) {
+                foreach ($chunk as $tag) {
+                    $results[] = $this->redis->smembers($this->tagKey($tag)) ?: [];
+                }
+
+                continue;
+            }
+
+            $replies = $this->redis->pipeline(function ($redis) use ($chunk) {
+                foreach ($chunk as $tag) {
+                    $redis->smembers($this->tagKey($tag));
+                }
+            });
+
+            foreach ($replies as $members) {
+                $results[] = is_array($members) ? $members : [];
+            }
+        }
+
+        return $results;
     }
 
     private function many(array $keys): array
